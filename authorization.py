@@ -70,7 +70,7 @@ class OAuthSignIn(object):
         return eval(f"registered_provider.{self.name}.authorize_access_token()")
 
     def authenticate_implicit(self, template_path):
-        return render_template(template_path)
+        return render_template(template_path, provider=self.name)
 
     def authenticate(self, registered_provider=None, template_path=None):
         if self.flow_type == "web" and registered_provider is not None:
