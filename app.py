@@ -23,11 +23,11 @@ app.config["OAUTH_CREDENTIALS"] = {
     "implicit": {
         "base_uri": "http://localhost:5000",
         "client_id": "<client id>",
-        "secret": "secret",
+        "secret": "<client secret>",
         "token_url": "<token url>",
-        "authorize_url": "<auth url>",
+        "authorize_url": "<authorize url>",
         "client_kwargs": {
-            "scope": "openid cactus read",
+            "scope": "read",
             "nonce": "gang",
             "response_type": "token",
             "state": "abc"
@@ -58,13 +58,13 @@ def login(provider):
 def callback(provider):
     auth_provider = OAuthSignIn(provider)
     registered_provider = auth_provider.register(app)
-    return auth_provider.authenticate(registered_provider, "templates/implicit.html")
+    return auth_provider.authenticate(registered_provider, "implicit.html")
 
 
 @app.route("/implicit/<provider>")
 def implicit(provider):
     auth_provider = OAuthSignIn(provider)
-    token = auth_provider.authenticate_implict_helper()
+    token = auth_provider.authenticate_implicit_helper()
     session[f'{provider}_token'] = token
     return redirect(url_for("home", provider=provider))
 

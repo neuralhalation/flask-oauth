@@ -2,7 +2,7 @@
     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script>
     const implicit = window.location.hash.substring(1);
-    $.getJSON(`/implicit/${provider}`, {
+    $.getJSON('/implicit/{{provider}}', {
         response: implicit
     })
 </script>
