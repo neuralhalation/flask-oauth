@@ -7,8 +7,8 @@ app.secret_key = os.urandom(24)
 app.config["OAUTH_CREDENTIALS"] = {
     "github": {
         "base_uri": "http://localhost:5000",
-        "client_id": "<your client id>",
-        "secret": "<your secret>",
+        "client_id": "<client id>",
+        "secret": "<client secret>",
         "token_url": "https://github.com/login/oauth/access_token",
         "authorize_url": "https://github.com/login/oauth/authorize",
         "client_kwargs": {
@@ -19,6 +19,24 @@ app.config["OAUTH_CREDENTIALS"] = {
         },
         "flow_type": "web",
         "redirect_uri": ""
+    },
+    "implicit": {
+        "base_uri": "http://localhost:5000",
+        "client_id": "<client id>",
+        "secret": "secret",
+        "token_url": "<token url>",
+        "authorize_url": "<auth url>",
+        "client_kwargs": {
+            "scope": "openid cactus read",
+            "nonce": "gang",
+            "response_type": "token",
+            "state": "abc"
+        },
+        "authorization_kwargs": {
+            "grant_type": ""
+        },
+        "flow_type": "implicit",
+        "redirect_uri": "http://localhost:5000/callback/implicit"
     }
 }
 
@@ -47,7 +65,7 @@ def callback(provider):
 def implicit(provider):
     auth_provider = OAuthSignIn(provider)
     token = auth_provider.authenticate_implict_helper()
-    session['token'] = token
+    session[f'{provider}_token'] = token
     return redirect(url_for("home", provider=provider))
 
 

@@ -37,15 +37,23 @@ class OAuthSignIn(object):
         return oauth
 
     def provider_session(self):
-        return OAuth2Session(
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            redirect_uri=self.redirect_uri,
-            scope=self.client_kwargs["scope"],
-        )
+        """Creates an OAuth2Session based on flow type.
+        """
+        if self.flow_type == "implicit":
+            return OAuth2Session(
+                client_id=self.client_id,
+                scope=self.client_kwargs["scope"],
+                redirect_uri=self.redirect_uri
+            )
+        elif self.flow_type == "client":
+            return OAuth2Session(
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+                scope=self.client_kwargs["scope"]
+            )
 
     def authorize(self, registered_provider=None, provider_session=None):
-        """Login
+        """Login function.
         """
         if self.flow_type == "web" and registered_provider is not None:
             redirect_uri = url_for("callback", provider=self.name, _external=True)
@@ -60,19 +68,50 @@ class OAuthSignIn(object):
             return redirect(url_for("home"))
         if self.flow_type == "implicit" and provider_session is not None:
             uri, state = provider_session.create_authorization_url(
-                client_id=self.client_id,
-                scope=self.client_kwargs["scope"],
-                redirect_uri=self.redirect_uri,
+                url=self.authorize_url,
+                response_type=self.client_kwargs["response_type"],
             )
             return redirect(uri)
 
     def authenticate_from_server(self, registered_provider):
+        """Performs the authentication step for a ``web`` authentication flow.
+
+        Args:
+            registered_provider (OAuth): An OAuth object.
+
+        Return:
+            obj: The return from ``authorize_access_token()``.
+
+        """
         return eval(f"registered_provider.{self.name}.authorize_access_token()")
 
     def authenticate_implicit(self, template_path):
+        """Performs the intermediary redirect to scrape the fragment from the browser
+        window. Used for ``implicit`` flow types.
+
+        Args:
+            template_path (str): The path to the implicit template.
+
+        Return:
+            obj: The return from ``render_template()`` with the provider name sent as a
+                an argument.
+
+        """
         return render_template(template_path, provider=self.name)
 
     def authenticate(self, registered_provider=None, template_path=None):
+        """Performs the callback step for authentication.
+
+        Args:
+            registered_provider (OAuth): An OAuth object. None required when using
+                implicit or client flow types.
+            template_path (str): The path to the implicit template. None required when
+                using web flow types.
+
+        Return:
+            obj: The authentication response based on flow type.
+
+        """
         if self.flow_type == "web" and registered_provider is not None:
             response = self.authenticate_from_server(registered_provider)
             if response is None or response.get("access_token") is None:
@@ -94,6 +133,13 @@ class OAuthSignIn(object):
             )
 
     def authenticate_implicit_helper(self):
+        """Recieves the return of the JavaScript function that scrapes the token
+        fragment from the browser window.
+
+        Return:
+            dict: The response as a dictionary.
+
+        """
         token = request.args.get("response")
         token_pieces = [i for i in token.split("&")]
         token_dict = {}
