@@ -5,4 +5,5 @@
     $.getJSON('/implicit/{{provider}}', {
         response: implicit
     })
+    window.location.href = `../implicit/{{provider}}#${implicit}`;
 </script>
