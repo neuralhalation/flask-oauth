@@ -32,7 +32,7 @@ class OAuthSignIn(object):
             access_token_url=self.access_token_url,
             authorize_url=self.authorize_url,
             client_kwargs=self.client_kwargs,
-            fetch_token=self.fetch_token_from_session
+            fetch_token=self.fetch_token_from_session,
         )
         return oauth
 
@@ -41,41 +41,57 @@ class OAuthSignIn(object):
             client_id=self.client_id,
             client_secret=self.client_secret,
             redirect_uri=self.redirect_uri,
-            scope=self.client_kwargs['scope']
+            scope=self.client_kwargs["scope"],
         )
 
     def authorize(self, registered_provider=None, provider_session=None):
         """Login
         """
         if self.flow_type == "web" and registered_provider is not None:
-            redirect_uri = url_for(
-                "callback", provider=self.name, _external=True
-            )
+            redirect_uri = url_for("callback", provider=self.name, _external=True)
             return eval(
                 f"registered_provider.{self.name}"
                 f".authorize_redirect('{redirect_uri}')"
             )
         if self.flow_type == "client" and provider_session is not None:
             return provider_session.fetch_access_token(
-                self.access_token_url,
-                self.authorization_kwargs
+                self.access_token_url, self.authorization_kwargs
             )
             return redirect(url_for("home"))
         if self.flow_type == "implicit" and provider_session is not None:
             uri, state = provider_session.create_authorization_url(
                 client_id=self.client_id,
-                scope=self.client_kwargs['scope'],
-                redirect_uri=self.redirect_uri
+                scope=self.client_kwargs["scope"],
+                redirect_uri=self.redirect_uri,
             )
             return redirect(uri)
 
     def authenticate_from_server(self, registered_provider):
-        return eval(
-            f"registered_provider.{self.name}.authorize_access_token()"
-        )
+        return eval(f"registered_provider.{self.name}.authorize_access_token()")
 
     def authenticate_implicit(self, template_path):
         return render_template(template_path)
+
+    def authenticate(self, registered_provider=None, template_path=None):
+        if self.flow_type == "web" and registered_provider is not None:
+            response = self.authenticate_from_server(registered_provider)
+            if response is None or response.get("access_token") is None:
+                return (
+                    f"Access Denied: Reason={request.args['error']} "
+                    f"error={request.args['error_description']} "
+                    f"response={response}"
+                )
+            session["token"] = response
+            return redirect(url_for("home", provider=self.name))
+        elif self.flow_type == "implicit" and template_path is not None:
+            return self.authenticate_implicit(template_path)
+        elif self.flow_type == "client":
+            return redirect(url_for("home", provider=self.name))
+        else:
+            raise Exception(
+                "Invalid flow type, registered_provider is None, "
+                "or template_path not specified"
+            )
 
     def authenticate_implicit_helper(self):
         token = request.args.get("response")
@@ -84,5 +100,4 @@ class OAuthSignIn(object):
         for t in token_pieces:
             split_value = t.split("=")
             token_dict[split_value[0]] = split_value[1]
-        session['implicit_token'] = token_dict
         return token_dict

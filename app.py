@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, url_for, session
+from flask import Flask, redirect, url_for, session
 from authorization import OAuthSignIn
 import os
 
@@ -7,7 +7,7 @@ app.secret_key = os.urandom(24)
 app.config["OAUTH_CREDENTIALS"] = {
     "github": {
         "base_uri": "http://localhost:5000",
-        "client_id": "<your client>",
+        "client_id": "<your client id>",
         "secret": "<your secret>",
         "token_url": "https://github.com/login/oauth/access_token",
         "authorize_url": "https://github.com/login/oauth/authorize",
@@ -40,23 +40,20 @@ def login(provider):
 def callback(provider):
     auth_provider = OAuthSignIn(provider)
     registered_provider = auth_provider.register(app)
-    provider_session = auth_provider.provider_session()
-    resp = eval(
-        f"registered_provider.{provider}.authorize_access_token()"
-    )
-    if resp is None or resp.get("access_token") is None:
-        return (
-            f"Access Denied: Reason={request.args['error']} "
-            f"error={request.args['error_description']} "
-            f"response={resp}"
-        )
-    session["token"] = resp
+    return auth_provider.authenticate(registered_provider, "templates/implicit.html")
+
+
+@app.route("/implicit/<provider>")
+def implicit(provider):
+    auth_provider = OAuthSignIn(provider)
+    token = auth_provider.authenticate_implict_helper()
+    session['token'] = token
     return redirect(url_for("home", provider=provider))
 
 
 @app.route("/home/<provider>", methods=["GET"])
 def home(provider):
-    return "You made it."
+    return f"You made it."
 
 
 if __name__ == "__main__":
