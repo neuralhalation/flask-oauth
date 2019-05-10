@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+black = "==19.3b0"
+flake8 = "*"
+pytest = "*"
+wfastcgi = "*"
+Flask = "*"
+Authlib = "*"
+requirements-txt = "*"
+Flask-Login = "*"
+Flask-SQLAlchemy = "*"
+
+[requires]
+python_version = "3.7"

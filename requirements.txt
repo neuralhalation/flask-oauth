@@ -1,0 +1,21 @@
+-i https://pypi.org/simple
+appdirs==1.4.3
+attrs==19.1.0
+black==19.3b0
+click==7.0
+entrypoints==0.3
+flake8==3.7.7
+flask==1.0.2
+itsdangerous==1.1.0
+jinja2==2.10.1
+markupsafe==1.1.1
+mccabe==0.6.1
+pycodestyle==2.5.0
+pyflakes==2.1.1
+toml==0.10.0
+werkzeug==0.15.2
+flask_login
+flask_sqlalchemy
+pytest
+wfastcgi
+authlib
