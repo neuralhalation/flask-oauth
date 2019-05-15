@@ -22,8 +22,8 @@ app.config["OAUTH_CREDENTIALS"] = {
     },
     "implicit": {
         "base_uri": "http://localhost:5000",
-        "client_id": "<client id>",
-        "secret": "<client secret>",
+        "client_id": "c78bc4aa-830f-4c72-9ce4-74ca4bdcc3a7",
+        "secret": "secret",
         "token_url": "<token url>",
         "authorize_url": "<authorize url>",
         "client_kwargs": {
